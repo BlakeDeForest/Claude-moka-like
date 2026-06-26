@@ -142,6 +142,32 @@ test('Lifecycle: a later shipped email upgrades status and keeps items', () => {
   assert.equal(o.total, 72);
 });
 
+test('Forwarded email: recovers original retailer/sender and parses', () => {
+  const fwd = {
+    id: 'fwd1',
+    sender: 'bdeforest20@gmail.com',
+    subject: 'Fwd: Order 999111 Confirmed',
+    date: '2026-06-20T00:00:00Z',
+    toRecipients: ['me@gmail.com'],
+    plaintextBody:
+      '---------- Forwarded message ---------\n' +
+      'From: <DonotReply.OnlineShop@orders.kmart.com.au>\n' +
+      'Date: Fri, Jun 12, 2026 at 2:41 PM\n' +
+      'Subject: Order 999111 Confirmed\n' +
+      'To: <janet.williams_7296@jezdog.com>\n\nYour order is being prepared',
+    htmlBody:
+      '<div>Order number #999111</div><div>One Piece Booster</div><div>#43792245</div>' +
+      '<div>Quantity : 3</div><div>$30.00</div>' +
+      '<div>Subtotal $30.00</div><div>Order Total (Incl. GST) $30.00</div>',
+  };
+  const o = parseEmail(fwd);
+  assert.equal(o.retailer, 'Kmart', 'routed to Kmart despite gmail From header');
+  assert.equal(o.orderNumber, '999111');
+  assert.equal(o.account, 'janet.williams_7296@jezdog.com', 'original recipient recovered');
+  assert.equal(o.items.length, 1);
+  assert.equal(o.items[0].qty, 3);
+});
+
 test('Generic fallback: only fires with order number + priced item', () => {
   const noItems = {
     id: 'g0',

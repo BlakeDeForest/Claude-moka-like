@@ -79,6 +79,11 @@ Supported file types:
 - `*.html` — raw email HTML. Name it with a retailer hint so it routes to the
   right parser, e.g. `kmart__632783560.html`, `mrtoys__W00415265.html`.
 
+**Forwarded emails work too.** If you forward an order email (to yourself or a
+dedicated inbox the app syncs), the parser detects the quoted "Forwarded
+message" header and recovers the original retailer, subject, and recipient — so
+forwarding is a valid way to feed in one-off orders.
+
 ### Option B — live Gmail sync (pull orders automatically)
 
 The app can connect to your Gmail (read-only) and pull order emails by itself.
