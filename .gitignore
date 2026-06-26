@@ -1,0 +1,21 @@
+node_modules/
+*.log
+.DS_Store
+
+# Local secrets / OAuth tokens for live Gmail sync (never commit)
+.env
+server/secrets/
+data/gmail-token.json
+data/gmail-credentials.json
+
+# Raw email exports you drop in for ingestion (large + contain personal HTML,
+# e.g. names/addresses). The parsed, address-free orders live in data/db.json.
+data/emails/*.html
+data/emails/*.htm
+data/emails/*.eml
+data/emails/*.json
+!data/emails/.gitkeep
+
+# User-uploaded SKU images (keep the folder, ignore contents)
+public/images/skus/*
+!public/images/skus/.gitkeep

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Order Tracker — Grouped by SKU</title>
+    <link rel="icon" href="/placeholder.svg" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar__left">
+        <h1>Order Tracker</h1>
+        <span class="topbar__tag">Moka-style</span>
+      </div>
+      <div class="topbar__stats" id="stats"></div>
+      <div class="topbar__actions">
+        <input id="search" type="search" placeholder="Search product, SKU, retailer…" />
+        <select id="sort" title="Sort by">
+          <option value="orders">Most orders</option>
+          <option value="qty">Highest qty</option>
+          <option value="value">Highest value</option>
+          <option value="name">Name (A–Z)</option>
+        </select>
+        <button id="sync" title="Re-ingest emails from data/emails/">Sync</button>
+      </div>
+    </header>
+
+    <main class="panel">
+      <div class="panel__head">
+        <h2>Grouped by SKU</h2>
+        <p>Click a row to expand order-level details.</p>
+      </div>
+      <div id="list" class="list"></div>
+      <div id="empty" class="empty" hidden>
+        No orders yet. Drop email exports into <code>data/emails/</code> and hit
+        <strong>Sync</strong>, or seed <code>data/db.json</code>.
+      </div>
+    </main>
+
+    <!-- Hidden file input reused for per-SKU image uploads. -->
+    <input id="imgInput" type="file" accept="image/*" hidden />
+
+    <script src="/app.js"></script>
+  </body>
+</html>
