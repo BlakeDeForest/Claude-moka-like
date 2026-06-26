@@ -111,6 +111,28 @@ body {
   font-size: 15px;
   font-weight: 700;
 }
+.tabs {
+  display: flex;
+  gap: 6px;
+}
+.tab {
+  background: none;
+  border: 1px solid transparent;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.tab:hover {
+  color: var(--text);
+}
+.tab.active {
+  color: var(--text);
+  background: var(--panel-2);
+  border-color: var(--border);
+}
 .panel__head p {
   margin: 4px 0 0;
   color: var(--muted-2);

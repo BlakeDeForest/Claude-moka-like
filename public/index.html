@@ -16,12 +16,7 @@
       <div class="topbar__stats" id="stats"></div>
       <div class="topbar__actions">
         <input id="search" type="search" placeholder="Search product, SKU, retailer…" />
-        <select id="sort" title="Sort by">
-          <option value="orders">Most orders</option>
-          <option value="qty">Highest qty</option>
-          <option value="value">Highest value</option>
-          <option value="name">Name (A–Z)</option>
-        </select>
+        <select id="sort" title="Sort by"></select>
         <select id="statusFilter" title="Filter by order status">
           <option value="">All statuses</option>
         </select>
@@ -32,8 +27,11 @@
 
     <main class="panel">
       <div class="panel__head">
-        <h2>Grouped by SKU</h2>
-        <p>Click a row to expand order-level details.</p>
+        <div class="tabs">
+          <button class="tab active" data-view="sku">Grouped by SKU</button>
+          <button class="tab" data-view="orders">Orders</button>
+        </div>
+        <p id="panelHint">Click a row to expand order-level details.</p>
       </div>
       <div id="list" class="list"></div>
       <div id="empty" class="empty" hidden>

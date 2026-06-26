@@ -7,6 +7,12 @@ normalizes each product into a canonical **SKU**, and renders a
 status** (processing / shipped / delivered / ready / cancelled / refunded),
 pre-order and "mixed values" badges, with expandable per-order details.
 
+It has two views — **Grouped by SKU** (one row per product) and **Orders** (one
+row per order, sortable by date / status / retailer / value / qty) — and can
+**scrape Gmail automatically** so new orders show up on their own.
+
+![Orders view](docs/orders.png)
+
 **Supported retailers (dedicated parsers):** Kmart, Target, EB Games, Mr Toys
 Toyworld, Pokémon Center (Global-e). Plus a generic **Shopify** parser that
 covers most small local game stores (LGS) and independent TCG shops, and a
@@ -105,6 +111,23 @@ Only the read-only Gmail scope is requested. The OAuth token is stored locally
 in `data/gmail-token.json` (git-ignored) and never leaves your machine. The set
 of senders/subjects searched is in `GMAIL_QUERY` in `server/gmail.js`.
 
+**Automatic scraping:** once connected, the app pulls new orders by itself —
+once on startup and then every `GMAIL_POLL_MINUTES` minutes (default 15; set the
+env var to `0` to disable). It scans the last `GMAIL_SINCE_DAYS` days (default
+60). Ingestion is idempotent (keyed by order id), so re-scanning never
+duplicates, and lifecycle emails (shipped/cancelled) just update existing
+orders. The list refreshes in the browser while the app is open.
+
+## Two views
+
+- **Grouped by SKU** — one row per product, aggregating quantity / value /
+  status across every order and account.
+- **Orders** — one row per individual order, sortable by **newest/oldest,
+  status, retailer, value, or quantity**; click a row to see its line items.
+
+Both views share the search box and status filter. Deep-link a view with
+`/?view=orders`.
+
 ## Order status
 
 Each order carries a lifecycle status parsed from its emails — `processing`
@@ -130,7 +153,7 @@ remembered in `db.json`.
 | Method | Path                          | Purpose                                    |
 | ------ | ----------------------------- | ------------------------------------------ |
 | GET    | `/api/groups?sort=&dir=&q=`   | grouped-by-SKU list + totals               |
-| GET    | `/api/orders`                 | all parsed orders                          |
+| GET    | `/api/orders?sort=&dir=&status=&q=` | sortable list of individual orders   |
 | GET    | `/api/retailers`              | supported retailers                        |
 | POST   | `/api/ingest`                 | re-ingest `data/emails/`                   |
 | GET    | `/api/gmail/status`           | `{ hasCredentials, connected }`            |

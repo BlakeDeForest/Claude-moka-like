@@ -9,8 +9,28 @@ const sortEl = document.getElementById('sort');
 const statusFilterEl = document.getElementById('statusFilter');
 const syncEl = document.getElementById('sync');
 const imgInput = document.getElementById('imgInput');
+const panelHintEl = document.getElementById('panelHint');
+const tabEls = document.querySelectorAll('.tab');
 
-let state = { sort: 'orders', dir: 'desc', q: '', status: '', open: new Set() };
+// Sort options per view. Each sets both the sort key and direction.
+const SORT_OPTIONS = {
+  sku: [
+    { label: 'Most orders', sort: 'orders', dir: 'desc' },
+    { label: 'Highest qty', sort: 'qty', dir: 'desc' },
+    { label: 'Highest value', sort: 'value', dir: 'desc' },
+    { label: 'Name (A–Z)', sort: 'name', dir: 'asc' },
+  ],
+  orders: [
+    { label: 'Newest first', sort: 'date', dir: 'desc' },
+    { label: 'Oldest first', sort: 'date', dir: 'asc' },
+    { label: 'Status', sort: 'status', dir: 'asc' },
+    { label: 'Retailer', sort: 'retailer', dir: 'asc' },
+    { label: 'Highest value', sort: 'value', dir: 'desc' },
+    { label: 'Highest qty', sort: 'qty', dir: 'desc' },
+  ],
+};
+
+let state = { view: 'sku', sort: 'orders', dir: 'desc', q: '', status: '', open: new Set() };
 let pendingImageSku = null;
 
 // Canonical status -> { label, class } for pills and chips.
@@ -36,9 +56,41 @@ const initials = (name) =>
 
 async function load() {
   const params = new URLSearchParams({ sort: state.sort, dir: state.dir, q: state.q, status: state.status });
-  const res = await fetch(`/api/groups?${params}`);
-  const data = await res.json();
-  render(data);
+  if (state.view === 'sku') {
+    const data = await (await fetch(`/api/groups?${params}`)).json();
+    renderSku(data);
+  } else {
+    const data = await (await fetch(`/api/orders?${params}`)).json();
+    renderOrders(data);
+  }
+}
+
+function populateSort() {
+  const opts = SORT_OPTIONS[state.view];
+  sortEl.innerHTML = opts.map((o, i) => `<option value="${i}">${o.label}</option>`).join('');
+  let idx = opts.findIndex((o) => o.sort === state.sort && o.dir === state.dir);
+  if (idx < 0) {
+    idx = 0;
+    state.sort = opts[0].sort;
+    state.dir = opts[0].dir;
+  }
+  sortEl.value = String(idx);
+}
+
+function setView(view) {
+  if (view === state.view) return;
+  state.view = view;
+  state.open = new Set();
+  const def = SORT_OPTIONS[view][0];
+  state.sort = def.sort;
+  state.dir = def.dir;
+  tabEls.forEach((t) => t.classList.toggle('active', t.dataset.view === view));
+  panelHintEl.textContent =
+    view === 'sku'
+      ? 'Click a row to expand order-level details.'
+      : 'Every order, newest first. Click a row to see its items.';
+  populateSort();
+  load();
 }
 
 function renderStatusFilter(statusCounts = {}) {
@@ -51,7 +103,7 @@ function renderStatusFilter(statusCounts = {}) {
   statusFilterEl.value = state.status;
 }
 
-function render({ groups, totals, statusCounts }) {
+function renderSku({ groups, totals, statusCounts }) {
   statsEl.innerHTML = `
     <div><span>SKUs</span><b class="num">${totals.skus}</b></div>
     <div><span>Orders</span><b class="num">${totals.orders}</b></div>
@@ -62,6 +114,63 @@ function render({ groups, totals, statusCounts }) {
   emptyEl.hidden = groups.length > 0;
   listEl.innerHTML = groups.map(renderGroup).join('');
   wire();
+}
+
+function renderOrders({ orders, totals, statusCounts }) {
+  statsEl.innerHTML = `
+    <div><span>Orders</span><b class="num">${totals.orders}</b></div>
+    <div><span>Units</span><b class="num">${totals.units}</b></div>
+    <div><span>Value</span><b class="num">$${money(totals.value)}</b></div>`;
+
+  renderStatusFilter(statusCounts);
+  emptyEl.hidden = orders.length > 0;
+  listEl.innerHTML = orders.map(renderOrderRow).join('');
+  wire();
+}
+
+function renderOrderRow(o) {
+  const open = state.open.has(o.id) ? ' open' : '';
+  const badges = o.preorder ? `<span class="badge badge--preorder">Pre-order</span>` : '';
+  const m = statusMeta(o.status);
+  return `
+  <div class="group${open}" data-order="${esc(o.id)}">
+    <div class="grow" data-toggle>
+      <div class="thumb">${initials(o.retailer)}</div>
+      <div class="grow__main">
+        <div class="grow__name">${esc(o.retailer)} · #${esc(o.orderNumber)}</div>
+        <div class="grow__sub">${esc(o.orderDate || '—')} · ${esc(prettyAccount(o.account))} · ${o.itemCount} item${o.itemCount === 1 ? '' : 's'}<span class="statusline"><span class="pill pill--${m.cls}">${esc(m.label)}</span></span></div>
+      </div>
+      <div class="grow__metrics">
+        <div class="metric"><span>Qty</span><b class="num">${o.totalQty}</b></div>
+        <div class="metric"><span>Total</span><b class="num">$${money(o.total)}</b></div>
+        ${badges}
+        <button class="chev" title="Expand">▾</button>
+      </div>
+    </div>
+    ${open ? renderOrderItems(o) : ''}
+  </div>`;
+}
+
+function renderOrderItems(o) {
+  const rows = o.items
+    .map(
+      (it) => `
+    <tr>
+      <td>${esc(it.name)}</td>
+      <td>${esc(it.sku)}</td>
+      <td class="num">${it.qty}</td>
+      <td class="num">${it.unitPrice == null ? '—' : '$' + money(it.unitPrice)}</td>
+      <td class="num">${it.lineTotal == null ? '—' : '$' + money(it.lineTotal)}</td>
+    </tr>`
+    )
+    .join('');
+  return `
+  <div class="detail">
+    <table>
+      <thead><tr><th>Product</th><th>SKU</th><th>Qty</th><th>Unit</th><th>Line total</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
 }
 
 // Build compact status chips (e.g. "3 Shipped" "2 Processing") for a group.
@@ -148,13 +257,13 @@ function prettyAccount(acc) {
 
 function wire() {
   listEl.querySelectorAll('.group').forEach((groupEl) => {
-    const sku = groupEl.dataset.sku;
+    const key = groupEl.dataset.sku || groupEl.dataset.order;
 
     groupEl.querySelectorAll('[data-toggle]').forEach((row) => {
       row.addEventListener('click', (e) => {
         if (e.target.closest('[data-img]')) return; // image click handled separately
-        if (state.open.has(sku)) state.open.delete(sku);
-        else state.open.add(sku);
+        if (state.open.has(key)) state.open.delete(key);
+        else state.open.add(key);
         load();
       });
     });
@@ -162,7 +271,7 @@ function wire() {
     groupEl.querySelectorAll('[data-img]').forEach((el) => {
       el.addEventListener('click', (e) => {
         e.stopPropagation();
-        pendingImageSku = sku;
+        pendingImageSku = groupEl.dataset.sku;
         imgInput.click();
       });
     });
@@ -241,6 +350,12 @@ if (new URLSearchParams(location.search).get('gmail') === 'connected') {
   history.replaceState({}, '', '/');
 }
 refreshGmail();
+// Re-check Gmail status periodically so the auto-sync "+N new" reflects in the
+// list while the app is open.
+setInterval(() => {
+  refreshGmail();
+  load();
+}, 60000);
 
 let searchTimer;
 searchEl.addEventListener('input', () => {
@@ -252,7 +367,9 @@ searchEl.addEventListener('input', () => {
 });
 
 sortEl.addEventListener('change', () => {
-  state.sort = sortEl.value;
+  const opt = SORT_OPTIONS[state.view][Number(sortEl.value)] || SORT_OPTIONS[state.view][0];
+  state.sort = opt.sort;
+  state.dir = opt.dir;
   load();
 });
 
@@ -260,6 +377,8 @@ statusFilterEl.addEventListener('change', () => {
   state.status = statusFilterEl.value;
   load();
 });
+
+tabEls.forEach((t) => t.addEventListener('click', () => setView(t.dataset.view)));
 
 syncEl.addEventListener('click', async () => {
   syncEl.disabled = true;
@@ -278,4 +397,19 @@ syncEl.addEventListener('click', async () => {
   load();
 });
 
+// Allow deep-linking to a view, e.g. /?view=orders
+const initialView = new URLSearchParams(location.search).get('view');
+if (initialView === 'orders' || initialView === 'sku') {
+  state.view = initialView;
+  const def = SORT_OPTIONS[state.view][0];
+  state.sort = def.sort;
+  state.dir = def.dir;
+  tabEls.forEach((t) => t.classList.toggle('active', t.dataset.view === state.view));
+  panelHintEl.textContent =
+    state.view === 'sku'
+      ? 'Click a row to expand order-level details.'
+      : 'Every order, newest first. Click a row to see its items.';
+}
+
+populateSort();
 load();

@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { load, save, setSkuMeta } from './db.js';
-import { groupBySku } from './grouping.js';
+import { groupBySku, listOrders } from './grouping.js';
 import { ingestFromDir, ingestEmails } from './ingest.js';
 import { listRetailers } from './parsers/index.js';
 import * as gmail from './gmail.js';
@@ -92,10 +92,16 @@ async function handleApi(req, res, url) {
     return sendJson(res, 200, result);
   }
 
-  // GET /api/orders
+  // GET /api/orders  (flat, sortable list of individual orders)
   if (req.method === 'GET' && parts[1] === 'orders') {
     const db = load();
-    return sendJson(res, 200, { orders: Object.values(db.orders) });
+    const result = listOrders(db, {
+      sort: url.searchParams.get('sort') || 'date',
+      dir: url.searchParams.get('dir') || 'desc',
+      q: url.searchParams.get('q') || '',
+      status: url.searchParams.get('status') || '',
+    });
+    return sendJson(res, 200, result);
   }
 
   // GET /api/retailers
@@ -113,7 +119,7 @@ async function handleApi(req, res, url) {
 
   // GET /api/gmail/status
   if (req.method === 'GET' && parts[1] === 'gmail' && parts[2] === 'status') {
-    return sendJson(res, 200, gmail.status());
+    return sendJson(res, 200, { ...gmail.status(), ...gmailSyncState });
   }
 
   // GET /api/gmail/connect -> redirect to Google consent
@@ -220,3 +226,46 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, () => {
   console.log(`\n  Moka-like order tracker running at http://localhost:${PORT}\n`);
 });
+
+// ---- Automatic Gmail scraping -------------------------------------------------
+// When Gmail is connected, pull new orders on startup and then on an interval,
+// so "whatever orders come in" land in the tracker without clicking Sync.
+// Controlled by GMAIL_POLL_MINUTES (default 15; set to 0 to disable). Ingestion
+// is idempotent (keyed by order id) so re-scanning is safe.
+const POLL_MINUTES = Number(process.env.GMAIL_POLL_MINUTES ?? 15);
+const POLL_SINCE_DAYS = Number(process.env.GMAIL_SINCE_DAYS ?? 60);
+const gmailSyncState = { autoPoll: POLL_MINUTES > 0, lastSync: null, lastResult: null };
+let polling = false;
+
+function sinceQueryDate(days) {
+  const d = new Date(Date.now() - days * 86400000);
+  return `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+}
+
+async function pollGmail() {
+  if (polling || !gmail.isConnected()) return;
+  polling = true;
+  try {
+    const emails = await gmail.fetchOrderEmails({
+      since: sinceQueryDate(POLL_SINCE_DAYS),
+      max: 200,
+    });
+    const db = load();
+    const r = ingestEmails(db, emails);
+    save(db);
+    gmailSyncState.lastSync = new Date().toISOString();
+    gmailSyncState.lastResult = { fetched: emails.length, ...r };
+    if (r.added || r.updated) {
+      console.log(`  [gmail] auto-sync: ${r.added} new, ${r.updated} updated`);
+    }
+  } catch (err) {
+    console.error('  [gmail] auto-sync failed:', err.message);
+  } finally {
+    polling = false;
+  }
+}
+
+if (POLL_MINUTES > 0) {
+  setTimeout(pollGmail, 3000); // shortly after startup
+  setInterval(pollGmail, POLL_MINUTES * 60000).unref();
+}

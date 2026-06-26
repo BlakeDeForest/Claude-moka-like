@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 import { toSku, slugify } from '../server/sku.js';
 import { parseEmail } from '../server/parsers/index.js';
-import { groupBySku } from '../server/grouping.js';
+import { groupBySku, listOrders } from '../server/grouping.js';
 import { ingestEmails } from '../server/ingest.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -62,6 +62,25 @@ test('Mr Toys fixture excludes shipping/summary rows from items', () => {
     assert.ok(!/post|courier|total|gst/i.test(it.name), `unexpected item: ${it.name}`);
   }
   assert.ok(order.total > 0);
+});
+
+test('listOrders sorts by date and filters by status', () => {
+  const db = {
+    orders: {
+      a: { id: 'a', retailer: 'Kmart', orderNumber: '1', orderDate: '2026-06-01', status: 'shipped', total: 10, items: [{ sku: 'x', qty: 2, lineTotal: 10 }] },
+      b: { id: 'b', retailer: 'Target', orderNumber: '2', orderDate: '2026-06-10', status: 'confirmed', total: 20, items: [{ sku: 'y', qty: 1, lineTotal: 20 }] },
+    },
+  };
+  const { orders, totals } = listOrders(db, { sort: 'date', dir: 'desc' });
+  assert.equal(orders[0].id, 'b', 'newest first');
+  assert.equal(orders[1].id, 'a');
+  assert.equal(totals.orders, 2);
+  assert.equal(totals.units, 3);
+  assert.equal(totals.value, 30);
+
+  const shipped = listOrders(db, { status: 'shipped' });
+  assert.equal(shipped.orders.length, 1);
+  assert.equal(shipped.orders[0].id, 'a');
 });
 
 test('groupBySku aggregates qty and dedupes orders', () => {
