@@ -1,10 +1,16 @@
 # Claude-moka-like
 
 A local order tracker for trading-card / toy retailer orders, inspired by
-[mokatracker.app](https://mokatracker.app/). It reads order-confirmation emails
-(Kmart, Mr Toys Toyworld, …), normalizes each product into a canonical **SKU**,
-and renders a **grouped-by-SKU** dark UI showing quantity, subtotal, order total,
-pre-order and "mixed values" badges, with expandable per-order details.
+[mokatracker.app](https://mokatracker.app/). It reads order-confirmation emails,
+normalizes each product into a canonical **SKU**, and renders a
+**grouped-by-SKU** dark UI showing quantity, subtotal, order total, pre-order and
+"mixed values" badges, with expandable per-order details.
+
+**Supported retailers (dedicated parsers):** Kmart, Target, EB Games, Mr Toys
+Toyworld, Pokémon Center (Global-e). Plus a generic **Shopify** parser that
+covers most small local game stores (LGS) and independent TCG shops, and a
+best-effort fallback for anything else. Adding a new retailer is one small
+module — see `server/parsers/`.
 
 ![Grouped by SKU view](docs/screenshot.png)
 
@@ -72,18 +78,26 @@ Supported file types:
 - `*.html` — raw email HTML. Name it with a retailer hint so it routes to the
   right parser, e.g. `kmart__632783560.html`, `mrtoys__W00415265.html`.
 
-### Option B — live Gmail sync (optional, scaffolded)
+### Option B — live Gmail sync (pull orders automatically)
 
-`server/gmail.js` contains a documented seam for pulling orders directly from
-Gmail via OAuth. The MVP intentionally leaves it unimplemented so the app needs
-no Google setup. To enable it:
+The app can connect to your Gmail (read-only) and pull order emails by itself.
+One-time Google setup:
 
-1. Create a Google Cloud project, enable the Gmail API, make an OAuth **Desktop**
-   client, and download the credentials JSON to `data/gmail-credentials.json`.
-2. `npm install googleapis`
-3. Implement `fetchOrderEmails()` in `server/gmail.js` and call `ingestEmails()`
-   with the result (from a route or a cron). The search query already lists the
-   in-scope retailers.
+1. Go to [console.cloud.google.com](https://console.cloud.google.com/) → create
+   a project.
+2. **APIs & Services → Enable APIs** → enable the **Gmail API**.
+3. **OAuth consent screen** → External → add your own Google account under
+   **Test users**.
+4. **Credentials → Create credentials → OAuth client ID** → Application type
+   **Desktop app** → download the JSON.
+5. Save that file as **`data/gmail-credentials.json`** (git-ignored).
+6. Install the client library once: `npm install googleapis`
+7. Start the app, click **Connect Gmail**, approve access. After that, click
+   **Sync Gmail** any time to pull new orders.
+
+Only the read-only Gmail scope is requested. The OAuth token is stored locally
+in `data/gmail-token.json` (git-ignored) and never leaves your machine. The set
+of senders/subjects searched is in `GMAIL_QUERY` in `server/gmail.js`.
 
 ## Product images
 
@@ -100,6 +114,9 @@ remembered in `db.json`.
 | GET    | `/api/orders`                 | all parsed orders                          |
 | GET    | `/api/retailers`              | supported retailers                        |
 | POST   | `/api/ingest`                 | re-ingest `data/emails/`                   |
+| GET    | `/api/gmail/status`           | `{ hasCredentials, connected }`            |
+| GET    | `/api/gmail/connect`          | start Gmail OAuth (redirects to Google)    |
+| POST   | `/api/gmail/sync`             | fetch new orders from Gmail + ingest       |
 | POST   | `/api/skus/:sku/image`        | set SKU image (`{ dataUrl }`)              |
 | POST   | `/api/skus/:sku/meta`         | set `{ displayName?, notes? }`             |
 
@@ -124,7 +141,13 @@ server/
   parsers/
     index.js          parser registry + SKU attachment
     kmart.js          Kmart Australia
+    target.js         Target Australia
+    ebgames.js        EB Games Australia
     mrtoys.js         Mr Toys Toyworld
+    pokemoncenter.js  Pokémon Center (Global-e)
+    shopify.js        generic Shopify stores (covers most LGS)
+    generic.js        best-effort fallback (registered last)
+    generic-extract.js shared "Name × N $price" extractor
     util.js           HTML→text, money/date helpers
 public/               dark Moka-style frontend
 data/

@@ -7,8 +7,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { load, save, setSkuMeta } from './db.js';
 import { groupBySku } from './grouping.js';
-import { ingestFromDir } from './ingest.js';
+import { ingestFromDir, ingestEmails } from './ingest.js';
 import { listRetailers } from './parsers/index.js';
+import * as gmail from './gmail.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
@@ -109,6 +110,42 @@ async function handleApi(req, res, url) {
     return sendJson(res, 200, { ok: true, ...r });
   }
 
+  // GET /api/gmail/status
+  if (req.method === 'GET' && parts[1] === 'gmail' && parts[2] === 'status') {
+    return sendJson(res, 200, gmail.status());
+  }
+
+  // GET /api/gmail/connect -> redirect to Google consent
+  if (req.method === 'GET' && parts[1] === 'gmail' && parts[2] === 'connect') {
+    const redirectUri = `http://${req.headers.host}/oauth2callback`;
+    try {
+      const authUrl = await gmail.getAuthUrl(redirectUri);
+      res.writeHead(302, { Location: authUrl });
+      return res.end();
+    } catch (err) {
+      return sendJson(res, 400, { error: err.message });
+    }
+  }
+
+  // POST /api/gmail/sync -> fetch from Gmail + ingest
+  if (req.method === 'POST' && parts[1] === 'gmail' && parts[2] === 'sync') {
+    const redirectUri = `http://${req.headers.host}/oauth2callback`;
+    const body = JSON.parse((await readBody(req)) || '{}');
+    try {
+      const emails = await gmail.fetchOrderEmails({
+        since: body.since,
+        max: body.max || 200,
+        redirectUri,
+      });
+      const db = load();
+      const r = ingestEmails(db, emails);
+      save(db);
+      return sendJson(res, 200, { ok: true, fetched: emails.length, ...r });
+    } catch (err) {
+      return sendJson(res, 400, { error: err.message });
+    }
+  }
+
   // POST /api/skus/:sku/image   body: { dataUrl }
   if (req.method === 'POST' && parts[1] === 'skus' && parts[3] === 'image') {
     const sku = decodeURIComponent(parts[2]);
@@ -158,7 +195,18 @@ function serveStatic(req, res, url) {
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   try {
-    if (url.pathname.startsWith('/api/')) {
+    if (url.pathname === '/oauth2callback') {
+      const code = url.searchParams.get('code');
+      const redirectUri = `http://${req.headers.host}/oauth2callback`;
+      try {
+        if (code) await gmail.handleCallback(code, redirectUri);
+        res.writeHead(302, { Location: '/?gmail=connected' });
+        return res.end();
+      } catch (err) {
+        res.writeHead(400, { 'Content-Type': 'text/plain' });
+        return res.end(`Gmail connection failed: ${err.message}`);
+      }
+    } else if (url.pathname.startsWith('/api/')) {
       await handleApi(req, res, url);
     } else {
       serveStatic(req, res, url);

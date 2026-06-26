@@ -145,6 +145,61 @@ imgInput.addEventListener('change', async () => {
   load();
 });
 
+// ---- Gmail connect / sync ----
+const gmailEl = document.getElementById('gmail');
+
+async function refreshGmail() {
+  try {
+    const s = await (await fetch('/api/gmail/status')).json();
+    gmailEl.dataset.state = !s.hasCredentials ? 'setup' : s.connected ? 'connected' : 'disconnected';
+    gmailEl.textContent = !s.hasCredentials
+      ? 'Gmail: set up'
+      : s.connected
+        ? 'Sync Gmail'
+        : 'Connect Gmail';
+  } catch {
+    gmailEl.textContent = 'Gmail';
+  }
+}
+
+gmailEl.addEventListener('click', async () => {
+  const state = gmailEl.dataset.state;
+  if (state === 'setup') {
+    alert(
+      'One-time setup needed for live Gmail sync:\n\n' +
+        '1. console.cloud.google.com → new project\n' +
+        '2. Enable the Gmail API\n' +
+        '3. OAuth consent screen → add yourself as a Test user\n' +
+        '4. Create OAuth client ID → Desktop app → download JSON\n' +
+        '5. Save it as data/gmail-credentials.json\n' +
+        '6. Run: npm install googleapis\n\n' +
+        'Then reload and click Connect Gmail. Full steps are in the README.'
+    );
+    return;
+  }
+  if (state === 'disconnected') {
+    window.location = '/api/gmail/connect';
+    return;
+  }
+  // connected -> sync
+  gmailEl.disabled = true;
+  gmailEl.textContent = 'Syncing Gmail…';
+  try {
+    const r = await (await fetch('/api/gmail/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })).json();
+    gmailEl.textContent = r.ok ? `+${r.added} new` : 'Sync failed';
+  } catch {
+    gmailEl.textContent = 'Sync failed';
+  }
+  setTimeout(refreshGmail, 1600);
+  gmailEl.disabled = false;
+  load();
+});
+
+if (new URLSearchParams(location.search).get('gmail') === 'connected') {
+  history.replaceState({}, '', '/');
+}
+refreshGmail();
+
 let searchTimer;
 searchEl.addEventListener('input', () => {
   clearTimeout(searchTimer);

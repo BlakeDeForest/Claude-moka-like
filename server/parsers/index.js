@@ -3,9 +3,16 @@
 
 import * as kmart from './kmart.js';
 import * as mrtoys from './mrtoys.js';
+import * as target from './target.js';
+import * as ebgames from './ebgames.js';
+import * as pokemoncenter from './pokemoncenter.js';
+import * as shopify from './shopify.js';
+import * as generic from './generic.js';
 import { toSku, displayName } from '../sku.js';
 
-const PARSERS = [kmart, mrtoys];
+// Order matters: specific retailers first, then the Shopify catch-all (covers
+// most small LGS), then the best-effort generic fallback LAST.
+const PARSERS = [kmart, mrtoys, target, ebgames, pokemoncenter, shopify, generic];
 
 /** Pick the parser whose `matches()` accepts this email, or null. */
 export function parserFor(email) {

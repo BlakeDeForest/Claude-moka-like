@@ -167,6 +167,110 @@
         "subject": "Mr Toys Toyworld Order Received"
       },
       "id": "mr-toys-toyworld-W00415265"
+    },
+    "eb-games-10B9BF264AA00E57-A": {
+      "retailer": "EB Games",
+      "orderNumber": "10B9BF264AA00E57-A",
+      "orderDate": "2026-06-26",
+      "account": "bdeforest22@jezdog.com",
+      "status": "shipped",
+      "currency": "AUD",
+      "subtotal": null,
+      "shipping": null,
+      "total": null,
+      "items": [
+        {
+          "name": "One Piece - TCG - [EB-06] Booster",
+          "retailerItemNo": null,
+          "qty": 24,
+          "unitPrice": null,
+          "lineTotal": null,
+          "preorder": true,
+          "releaseDate": "2027-01-29",
+          "sku": "one-piece-tcg-eb-06-booster"
+        }
+      ],
+      "source": {
+        "messageId": "19f0143d5521c678",
+        "subject": "Hi Blakey, we've got your order!"
+      },
+      "id": "eb-games-10B9BF264AA00E57-A"
+    },
+    "eb-games-10B9BF264AA05405-A": {
+      "retailer": "EB Games",
+      "orderNumber": "10B9BF264AA05405-A",
+      "orderDate": "2026-06-26",
+      "account": "bdeforest22@jezdog.com",
+      "status": "shipped",
+      "currency": "AUD",
+      "subtotal": null,
+      "shipping": null,
+      "total": null,
+      "items": [
+        {
+          "name": "One Piece - TCG - Illustration Box [IB-10]",
+          "retailerItemNo": null,
+          "qty": 1,
+          "unitPrice": null,
+          "lineTotal": null,
+          "preorder": true,
+          "releaseDate": "2026-12-04",
+          "sku": "one-piece-tcg-illustration-box-ib-10"
+        }
+      ],
+      "source": {
+        "messageId": "19f0163c04d2c5e6",
+        "subject": "Hi Blakey, we've got your order!"
+      },
+      "id": "eb-games-10B9BF264AA05405-A"
+    },
+    "eb-games-10B9BF264AA12F11-A": {
+      "retailer": "EB Games",
+      "orderNumber": "10B9BF264AA12F11-A",
+      "orderDate": "2026-06-26",
+      "account": "bdeforest22@jezdog.com",
+      "status": "shipped",
+      "currency": "AUD",
+      "subtotal": null,
+      "shipping": null,
+      "total": null,
+      "items": [
+        {
+          "name": "Pokemon - TCG - Mega Charizard ex Tin (Assorted)",
+          "retailerItemNo": null,
+          "qty": 1,
+          "unitPrice": null,
+          "lineTotal": null,
+          "preorder": false,
+          "releaseDate": "2026-07-03",
+          "sku": "pokemon-tcg-mega-charizard-ex-tin-assorted"
+        },
+        {
+          "name": "Pokemon - TCG - Scarlet & Violet Prismatic Evolutions Poster Collection",
+          "retailerItemNo": null,
+          "qty": 1,
+          "unitPrice": null,
+          "lineTotal": null,
+          "preorder": false,
+          "releaseDate": "2026-07-03",
+          "sku": "pokemon-tcg-scarlet-violet-prismatic-evolutions-poster-collection"
+        },
+        {
+          "name": "Pokemon - TCG - Ascended Heroes First Partners Deluxe Pin Collection",
+          "retailerItemNo": null,
+          "qty": 1,
+          "unitPrice": null,
+          "lineTotal": null,
+          "preorder": false,
+          "releaseDate": "2026-07-03",
+          "sku": "pokemon-tcg-ascended-heroes-first-partners-deluxe-pin-collection"
+        }
+      ],
+      "source": {
+        "messageId": "19f01b1265bdf5fd",
+        "subject": "Hi Blakey, we've got your order!"
+      },
+      "id": "eb-games-10B9BF264AA12F11-A"
     }
   },
   "skuMeta": {},
