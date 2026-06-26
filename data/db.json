@@ -1,0 +1,287 @@
+{
+  "orders": {
+    "kmart-632762916": {
+      "retailer": "Kmart",
+      "orderNumber": "632762916",
+      "orderDate": "2026-06-12",
+      "account": "melanie.carpenter_4917@jezdog.com",
+      "status": "confirmed",
+      "currency": "AUD",
+      "subtotal": 72,
+      "shipping": 0,
+      "total": 72,
+      "items": [
+        {
+          "name": "One Piece Trading Card Game The Time of Battle Boo",
+          "retailerItemNo": "43792245",
+          "qty": 10,
+          "lineTotal": 72,
+          "unitPrice": 7.2,
+          "preorder": true,
+          "releaseDate": "2026-06-15",
+          "sku": "one-piece-tcg-the-time-of-battle-boo"
+        }
+      ],
+      "source": {
+        "messageId": "19eba2298cd596b3",
+        "subject": "Order 632762916 Confirmed"
+      },
+      "id": "kmart-632762916",
+      "statusDate": "2026-06-12"
+    },
+    "kmart-632786976": {
+      "retailer": "Kmart",
+      "orderNumber": "632786976",
+      "orderDate": "2026-06-12",
+      "account": "holly.johnson_1260@jezdog.com",
+      "status": "confirmed",
+      "currency": "AUD",
+      "subtotal": 72,
+      "shipping": 0,
+      "total": 72,
+      "items": [
+        {
+          "name": "One Piece Trading Card Game The Time of Battle Boo",
+          "retailerItemNo": "43792245",
+          "qty": 10,
+          "lineTotal": 72,
+          "unitPrice": 7.2,
+          "preorder": true,
+          "releaseDate": "2026-06-15",
+          "sku": "one-piece-tcg-the-time-of-battle-boo"
+        }
+      ],
+      "source": {
+        "messageId": "19eba22a158179b3",
+        "subject": "Order 632786976 Confirmed"
+      },
+      "id": "kmart-632786976",
+      "statusDate": "2026-06-12"
+    },
+    "kmart-632792430": {
+      "retailer": "Kmart",
+      "orderNumber": "632792430",
+      "orderDate": "2026-06-12",
+      "account": "janet.williams_7296@jezdog.com",
+      "status": "confirmed",
+      "currency": "AUD",
+      "subtotal": 72,
+      "shipping": 0,
+      "total": 72,
+      "items": [
+        {
+          "name": "One Piece Trading Card Game The Time of Battle Boo",
+          "retailerItemNo": "43792245",
+          "qty": 10,
+          "lineTotal": 72,
+          "unitPrice": 7.2,
+          "preorder": true,
+          "releaseDate": "2026-06-15",
+          "sku": "one-piece-tcg-the-time-of-battle-boo"
+        }
+      ],
+      "source": {
+        "messageId": "19eba22de807b648",
+        "subject": "Order 632792430 Confirmed"
+      },
+      "id": "kmart-632792430",
+      "statusDate": "2026-06-12"
+    },
+    "kmart-632765362": {
+      "retailer": "Kmart",
+      "orderNumber": "632765362",
+      "orderDate": "2026-06-12",
+      "account": "catherine.johnson_1147@jezdog.com",
+      "status": "confirmed",
+      "currency": "AUD",
+      "subtotal": 72,
+      "shipping": 0,
+      "total": 72,
+      "items": [
+        {
+          "name": "One Piece Trading Card Game The Time of Battle Boo",
+          "retailerItemNo": "43792245",
+          "qty": 10,
+          "lineTotal": 72,
+          "unitPrice": 7.2,
+          "preorder": true,
+          "releaseDate": "2026-06-15",
+          "sku": "one-piece-tcg-the-time-of-battle-boo"
+        }
+      ],
+      "source": {
+        "messageId": "19eba23492269975",
+        "subject": "Order 632765362 Confirmed"
+      },
+      "id": "kmart-632765362",
+      "statusDate": "2026-06-12"
+    },
+    "kmart-632783560": {
+      "retailer": "Kmart",
+      "orderNumber": "632783560",
+      "orderDate": "2026-06-12",
+      "account": "robert.smith_6224@jezdog.com",
+      "status": "confirmed",
+      "currency": "AUD",
+      "subtotal": 72,
+      "shipping": 0,
+      "total": 72,
+      "items": [
+        {
+          "name": "One Piece Trading Card Game The Time of Battle Boo",
+          "retailerItemNo": "43792245",
+          "qty": 10,
+          "lineTotal": 72,
+          "unitPrice": 7.2,
+          "preorder": true,
+          "releaseDate": "2026-06-15",
+          "sku": "one-piece-tcg-the-time-of-battle-boo"
+        }
+      ],
+      "source": {
+        "messageId": "19eba24ceb998113",
+        "subject": "Order 632783560 Confirmed"
+      },
+      "id": "kmart-632783560",
+      "statusDate": "2026-06-12"
+    },
+    "mr-toys-toyworld-W00415265": {
+      "retailer": "Mr Toys Toyworld",
+      "orderNumber": "W00415265",
+      "orderDate": "2026-06-22",
+      "account": "bdeforest22@jezdog.com",
+      "status": "confirmed",
+      "currency": "AUD",
+      "subtotal": 108,
+      "shipping": 12.9,
+      "total": 120.9,
+      "items": [
+        {
+          "name": "Pokemon Trading Card Game ME2.5 Ascended Heroes Booster Bundle",
+          "retailerItemNo": null,
+          "qty": 2,
+          "unitPrice": 54,
+          "lineTotal": 108,
+          "preorder": false,
+          "releaseDate": null,
+          "sku": "pokemon-tcg-ascended-heroes-booster-bundle"
+        }
+      ],
+      "source": {
+        "messageId": "19eececb26f66c85",
+        "subject": "Mr Toys Toyworld Order Received"
+      },
+      "id": "mr-toys-toyworld-W00415265",
+      "statusDate": "2026-06-22"
+    },
+    "eb-games-10B9BF264AA00E57-A": {
+      "retailer": "EB Games",
+      "orderNumber": "10B9BF264AA00E57-A",
+      "orderDate": "2026-06-26",
+      "account": "bdeforest22@jezdog.com",
+      "status": "confirmed",
+      "currency": "AUD",
+      "subtotal": null,
+      "shipping": null,
+      "total": null,
+      "items": [
+        {
+          "name": "One Piece - TCG - [EB-06] Booster",
+          "retailerItemNo": null,
+          "qty": 24,
+          "unitPrice": null,
+          "lineTotal": null,
+          "preorder": true,
+          "releaseDate": "2027-01-29",
+          "sku": "one-piece-tcg-eb-06-booster"
+        }
+      ],
+      "source": {
+        "messageId": "19f0143d5521c678",
+        "subject": "Hi Blakey, we've got your order!"
+      },
+      "id": "eb-games-10B9BF264AA00E57-A",
+      "statusDate": "2026-06-26"
+    },
+    "eb-games-10B9BF264AA05405-A": {
+      "retailer": "EB Games",
+      "orderNumber": "10B9BF264AA05405-A",
+      "orderDate": "2026-06-26",
+      "account": "bdeforest22@jezdog.com",
+      "status": "confirmed",
+      "currency": "AUD",
+      "subtotal": null,
+      "shipping": null,
+      "total": null,
+      "items": [
+        {
+          "name": "One Piece - TCG - Illustration Box [IB-10]",
+          "retailerItemNo": null,
+          "qty": 1,
+          "unitPrice": null,
+          "lineTotal": null,
+          "preorder": true,
+          "releaseDate": "2026-12-04",
+          "sku": "one-piece-tcg-illustration-box-ib-10"
+        }
+      ],
+      "source": {
+        "messageId": "19f0163c04d2c5e6",
+        "subject": "Hi Blakey, we've got your order!"
+      },
+      "id": "eb-games-10B9BF264AA05405-A",
+      "statusDate": "2026-06-26"
+    },
+    "eb-games-10B9BF264AA12F11-A": {
+      "retailer": "EB Games",
+      "orderNumber": "10B9BF264AA12F11-A",
+      "orderDate": "2026-06-26",
+      "account": "bdeforest22@jezdog.com",
+      "status": "confirmed",
+      "currency": "AUD",
+      "subtotal": null,
+      "shipping": null,
+      "total": null,
+      "items": [
+        {
+          "name": "Pokemon - TCG - Mega Charizard ex Tin (Assorted)",
+          "retailerItemNo": null,
+          "qty": 1,
+          "unitPrice": null,
+          "lineTotal": null,
+          "preorder": false,
+          "releaseDate": "2026-07-03",
+          "sku": "pokemon-tcg-mega-charizard-ex-tin-assorted"
+        },
+        {
+          "name": "Pokemon - TCG - Scarlet & Violet Prismatic Evolutions Poster Collection",
+          "retailerItemNo": null,
+          "qty": 1,
+          "unitPrice": null,
+          "lineTotal": null,
+          "preorder": false,
+          "releaseDate": "2026-07-03",
+          "sku": "pokemon-tcg-scarlet-violet-prismatic-evolutions-poster-collection"
+        },
+        {
+          "name": "Pokemon - TCG - Ascended Heroes First Partners Deluxe Pin Collection",
+          "retailerItemNo": null,
+          "qty": 1,
+          "unitPrice": null,
+          "lineTotal": null,
+          "preorder": false,
+          "releaseDate": "2026-07-03",
+          "sku": "pokemon-tcg-ascended-heroes-first-partners-deluxe-pin-collection"
+        }
+      ],
+      "source": {
+        "messageId": "19f01b1265bdf5fd",
+        "subject": "Hi Blakey, we've got your order!"
+      },
+      "id": "eb-games-10B9BF264AA12F11-A",
+      "statusDate": "2026-06-26"
+    }
+  },
+  "skuMeta": {},
+  "aliases": []
+}

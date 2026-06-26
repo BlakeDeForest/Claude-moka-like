@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Order Tracker — Grouped by SKU</title>
+    <link rel="icon" href="/placeholder.svg" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar__left">
+        <h1>Order Tracker</h1>
+        <span class="topbar__tag">Moka-style</span>
+      </div>
+      <div class="topbar__stats" id="stats"></div>
+      <div class="topbar__actions">
+        <input id="search" type="search" placeholder="Search product, SKU, retailer…" />
+        <select id="sort" title="Sort by"></select>
+        <select id="statusFilter" title="Filter by order status">
+          <option value="">All statuses</option>
+        </select>
+        <button id="gmail" title="Connect or sync your Gmail">Gmail</button>
+        <button id="sync" title="Re-ingest emails from data/emails/">Sync</button>
+      </div>
+    </header>
+
+    <main class="panel">
+      <div class="panel__head">
+        <div class="tabs">
+          <button class="tab active" data-view="sku">Grouped by SKU</button>
+          <button class="tab" data-view="orders">Orders</button>
+        </div>
+        <p id="panelHint">Click a row to expand order-level details.</p>
+      </div>
+      <div id="list" class="list"></div>
+      <div id="empty" class="empty" hidden>
+        No orders yet. Drop email exports into <code>data/emails/</code> and hit
+        <strong>Sync</strong>, or seed <code>data/db.json</code>.
+      </div>
+    </main>
+
+    <!-- Hidden file input reused for per-SKU image uploads. -->
+    <input id="imgInput" type="file" accept="image/*" hidden />
+
+    <script src="/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "claude-moka-like",
+  "version": "0.1.0",
+  "description": "Local order tracker that parses retailer order-confirmation emails, groups them by SKU, and renders a Moka-style grouped list.",
+  "type": "module",
+  "scripts": {
+    "start": "node server/index.js",
+    "ingest": "node server/ingest.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}
