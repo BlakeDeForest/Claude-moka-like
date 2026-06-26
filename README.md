@@ -17,7 +17,14 @@ many units you have on order and across how many orders.
 
 ## Quick start
 
-No dependencies to install — it runs on Node's built-ins (Node 18+).
+First install [Node.js](https://nodejs.org) (LTS, v18+). That's the only
+prerequisite — the app itself has no dependencies to install.
+
+**Easiest (no terminal):** double-click **`start.command`** (macOS/Linux) or
+**`start.bat`** (Windows). It launches the server and opens your browser. On
+macOS the first time, right-click → **Open** to get past the security prompt.
+
+**Terminal:**
 
 ```bash
 npm start          # serves http://localhost:3000
