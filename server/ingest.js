@@ -13,29 +13,70 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseEmail } from './parsers/index.js';
-import { load, save, upsertOrder, DATA_DIR } from './db.js';
+import { load, save, DATA_DIR } from './db.js';
+import { pickStatus } from './status.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const EMAILS_DIR = path.join(DATA_DIR, 'emails');
+
+/**
+ * Merge an incoming order into the existing record for the same order id,
+ * keeping the richest line items + monetary fields and the winning status.
+ */
+export function mergeOrder(existing, incoming) {
+  const keep = (a, b) => (a != null ? a : b);
+  const ai = existing.items?.length || 0;
+  const bi = incoming.items?.length || 0;
+  const items = bi >= ai ? (bi > 0 ? incoming.items : existing.items) : existing.items;
+  const orderDate = [existing.orderDate, incoming.orderDate].filter(Boolean).sort()[0] || null;
+  const statusDate =
+    [existing.statusDate, incoming.statusDate].filter(Boolean).sort().pop() || null;
+  return {
+    ...existing,
+    ...incoming,
+    items,
+    subtotal: keep(existing.subtotal, incoming.subtotal),
+    total: keep(existing.total, incoming.total),
+    shipping: keep(existing.shipping, incoming.shipping),
+    orderDate,
+    status: pickStatus(existing, incoming),
+    statusDate,
+  };
+}
 
 /** Parse + upsert an array of emails. Returns { added, updated, skipped }. */
 export function ingestEmails(db, emails, aliases = db.aliases || []) {
   let added = 0;
   let updated = 0;
   let skipped = 0;
+
+  // Parse first, then process oldest-first so a later shipped/cancelled email
+  // merges on top of the original confirmation regardless of file order.
+  const parsed = [];
   for (const email of emails) {
-    let order = null;
     try {
-      order = parseEmail(email, aliases);
+      const order = parseEmail(email, aliases);
+      if (order) parsed.push(order);
+      else skipped++;
     } catch (err) {
       console.error(`Parse error for ${email.id || email.subject}:`, err.message);
-    }
-    if (!order || !order.items.length) {
       skipped++;
-      continue;
     }
-    if (upsertOrder(db, order)) added++;
-    else updated++;
+  }
+  parsed.sort((a, b) => (a.statusDate || '').localeCompare(b.statusDate || ''));
+
+  for (const order of parsed) {
+    const existing = db.orders[order.id];
+    if (existing) {
+      db.orders[order.id] = mergeOrder(existing, order);
+      updated++;
+    } else if (order.items.length) {
+      db.orders[order.id] = order;
+      added++;
+    } else {
+      // Brand-new order we've only ever seen a status update for (no items).
+      skipped++;
+    }
   }
   return { added, updated, skipped };
 }

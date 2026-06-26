@@ -3,8 +3,9 @@
 A local order tracker for trading-card / toy retailer orders, inspired by
 [mokatracker.app](https://mokatracker.app/). It reads order-confirmation emails,
 normalizes each product into a canonical **SKU**, and renders a
-**grouped-by-SKU** dark UI showing quantity, subtotal, order total, pre-order and
-"mixed values" badges, with expandable per-order details.
+**grouped-by-SKU** dark UI showing quantity, subtotal, order total, **order
+status** (processing / shipped / delivered / ready / cancelled / refunded),
+pre-order and "mixed values" badges, with expandable per-order details.
 
 **Supported retailers (dedicated parsers):** Kmart, Target, EB Games, Mr Toys
 Toyworld, Pokémon Center (Global-e). Plus a generic **Shopify** parser that
@@ -98,6 +99,19 @@ One-time Google setup:
 Only the read-only Gmail scope is requested. The OAuth token is stored locally
 in `data/gmail-token.json` (git-ignored) and never leaves your machine. The set
 of senders/subjects searched is in `GMAIL_QUERY` in `server/gmail.js`.
+
+## Order status
+
+Each order carries a lifecycle status parsed from its emails — `processing`
+(placed / being prepared), `ready` (for pickup), `shipped`, `delivered`,
+`delayed`, `cancelled`, `refunded`. As more emails arrive for the same order
+(e.g. a later "shipped" or "cancelled" notice), ingestion **merges** them: the
+higher lifecycle stage wins and the original line items are preserved, so a
+status-only email never wipes your product data.
+
+Each group row shows a compact status summary (e.g. "3 Shipped · 2 Processing"),
+the expanded view shows a status pill per order, and the **status dropdown**
+filters the whole list to one status (e.g. show everything still processing).
 
 ## Product images
 

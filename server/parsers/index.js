@@ -9,6 +9,7 @@ import * as pokemoncenter from './pokemoncenter.js';
 import * as shopify from './shopify.js';
 import * as generic from './generic.js';
 import { toSku, displayName } from '../sku.js';
+import { parseDate } from './util.js';
 
 // Order matters: specific retailers first, then the Shopify catch-all (covers
 // most small LGS), then the best-effort generic fallback LAST.
@@ -37,6 +38,9 @@ export function parseEmail(email, aliases = []) {
   if (!order || !order.orderNumber) return null;
 
   order.id = `${slug(order.retailer)}-${order.orderNumber}`;
+  // When this status update happened (used to pick the latest status across the
+  // order's lifecycle of emails). Falls back to the order date.
+  order.statusDate = parseDate(email.date) || order.orderDate || null;
   order.items = (order.items || []).map((it) => ({
     ...it,
     name: displayName(it.name),

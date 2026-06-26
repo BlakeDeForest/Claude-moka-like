@@ -6,11 +6,26 @@ const emptyEl = document.getElementById('empty');
 const statsEl = document.getElementById('stats');
 const searchEl = document.getElementById('search');
 const sortEl = document.getElementById('sort');
+const statusFilterEl = document.getElementById('statusFilter');
 const syncEl = document.getElementById('sync');
 const imgInput = document.getElementById('imgInput');
 
-let state = { sort: 'orders', dir: 'desc', q: '', open: new Set() };
+let state = { sort: 'orders', dir: 'desc', q: '', status: '', open: new Set() };
 let pendingImageSku = null;
+
+// Canonical status -> { label, class } for pills and chips.
+const STATUS_META = {
+  processing: { label: 'Processing', cls: 'processing' },
+  confirmed: { label: 'Processing', cls: 'processing' },
+  ready: { label: 'Ready for pickup', cls: 'ready' },
+  shipped: { label: 'Shipped', cls: 'shipped' },
+  delivered: { label: 'Delivered', cls: 'delivered' },
+  delayed: { label: 'Delayed', cls: 'delayed' },
+  cancelled: { label: 'Cancelled', cls: 'cancelled' },
+  refunded: { label: 'Refunded', cls: 'refunded' },
+  unknown: { label: 'Unknown', cls: 'unknown' },
+};
+const statusMeta = (s) => STATUS_META[s] || { label: s || 'Unknown', cls: 'unknown' };
 
 const money = (n) =>
   (n == null ? 0 : n).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -20,22 +35,49 @@ const initials = (name) =>
   esc(String(name || '?').replace(/[^a-zA-Z0-9 ]/g, '').trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase() || '?');
 
 async function load() {
-  const params = new URLSearchParams({ sort: state.sort, dir: state.dir, q: state.q });
+  const params = new URLSearchParams({ sort: state.sort, dir: state.dir, q: state.q, status: state.status });
   const res = await fetch(`/api/groups?${params}`);
   const data = await res.json();
   render(data);
 }
 
-function render({ groups, totals }) {
+function renderStatusFilter(statusCounts = {}) {
+  const total = Object.values(statusCounts).reduce((a, b) => a + b, 0);
+  const opts = [`<option value="">All statuses (${total})</option>`];
+  for (const [s, n] of Object.entries(statusCounts).sort((a, b) => b[1] - a[1])) {
+    opts.push(`<option value="${esc(s)}">${esc(statusMeta(s).label)} (${n})</option>`);
+  }
+  statusFilterEl.innerHTML = opts.join('');
+  statusFilterEl.value = state.status;
+}
+
+function render({ groups, totals, statusCounts }) {
   statsEl.innerHTML = `
     <div><span>SKUs</span><b class="num">${totals.skus}</b></div>
     <div><span>Orders</span><b class="num">${totals.orders}</b></div>
     <div><span>Units</span><b class="num">${totals.units}</b></div>
     <div><span>Value</span><b class="num">$${money(totals.value)}</b></div>`;
 
+  renderStatusFilter(statusCounts);
   emptyEl.hidden = groups.length > 0;
   listEl.innerHTML = groups.map(renderGroup).join('');
   wire();
+}
+
+// Build compact status chips (e.g. "3 Shipped" "2 Processing") for a group.
+function statusChips(statuses = {}) {
+  const entries = Object.entries(statuses).sort((a, b) => b[1] - a[1]);
+  if (!entries.length) return '';
+  return (
+    '<span class="statusline">' +
+    entries
+      .map(([s, n]) => {
+        const m = statusMeta(s);
+        return `<span class="pill pill--${m.cls}">${n} ${esc(m.label)}</span>`;
+      })
+      .join('') +
+    '</span>'
+  );
 }
 
 function renderGroup(g) {
@@ -54,7 +96,7 @@ function renderGroup(g) {
       <div class="thumb" data-img title="Click to set image">${thumb}</div>
       <div class="grow__main">
         <div class="grow__name">${esc(g.displayName)}</div>
-        <div class="grow__sub">SKU: ${esc(g.sku)} · ${g.orderCount} order${g.orderCount === 1 ? '' : 's'} · ${esc(g.retailers.join(', '))}</div>
+        <div class="grow__sub">SKU: ${esc(g.sku)} · ${g.orderCount} order${g.orderCount === 1 ? '' : 's'} · ${esc(g.retailers.join(', '))}${statusChips(g.statuses)}</div>
       </div>
       <div class="grow__metrics">
         <div class="metric"><span>Qty</span><b class="num">${g.totalQty}</b></div>
@@ -77,7 +119,7 @@ function renderDetail(g) {
       <td>${esc(o.retailer)}</td>
       <td>#${esc(o.orderNumber)}</td>
       <td>${esc(prettyAccount(o.account))}</td>
-      <td><span class="pill pill--${esc(o.status)}">${esc(o.status)}</span>${o.preorder ? ' <span class="pill">pre-order' + (o.releaseDate ? ' ' + esc(o.releaseDate) : '') + '</span>' : ''}</td>
+      <td><span class="pill pill--${statusMeta(o.status).cls}">${esc(statusMeta(o.status).label)}</span>${o.preorder ? ' <span class="pill">pre-order' + (o.releaseDate ? ' ' + esc(o.releaseDate) : '') + '</span>' : ''}</td>
       <td class="num">${o.qty}</td>
       <td class="num">${o.unitPrice == null ? '—' : '$' + money(o.unitPrice)}</td>
       <td class="num">${o.lineTotal == null ? '—' : '$' + money(o.lineTotal)}</td>
@@ -211,6 +253,11 @@ searchEl.addEventListener('input', () => {
 
 sortEl.addEventListener('change', () => {
   state.sort = sortEl.value;
+  load();
+});
+
+statusFilterEl.addEventListener('change', () => {
+  state.status = statusFilterEl.value;
   load();
 });
 

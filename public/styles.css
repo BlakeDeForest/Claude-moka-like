@@ -265,11 +265,17 @@ body {
   color: var(--muted);
   text-transform: capitalize;
 }
-.pill--confirmed {
+.pill--confirmed,
+.pill--processing {
   color: #7fb0ef;
   border-color: #3a567e;
 }
-.pill--shipped {
+.pill--ready {
+  color: #4fc3c3;
+  border-color: #2f6b6b;
+}
+.pill--shipped,
+.pill--delivered {
   color: var(--green);
   border-color: #2f6b45;
 }
@@ -277,9 +283,22 @@ body {
   color: var(--accent);
   border-color: #7a5424;
 }
-.pill--refunded {
+.pill--refunded,
+.pill--cancelled {
   color: #e06b6b;
   border-color: #7a3434;
+}
+
+/* compact status chips on the group row */
+.statusline {
+  display: inline-flex;
+  gap: 6px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+.statusline .pill {
+  font-size: 10px;
+  padding: 1px 7px;
 }
 .detail__actions {
   margin-top: 10px;

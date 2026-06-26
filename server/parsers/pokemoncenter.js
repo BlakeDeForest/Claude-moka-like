@@ -76,7 +76,7 @@ export function parse(email) {
       releaseDate: null,
     });
   }
-  if (!items.length) return null;
+  // Status-only emails may have no line items; still return so status updates.
 
   const subtotal = parseMoney((flat.match(/Subtotal\s*AU?\$([\d.,]+)/i) || [])[1]);
   const shipping = parseMoney((flat.match(/Shipping\s*AU?\$([\d.,]+)/i) || [])[1]);

@@ -4,15 +4,19 @@ import { displayName as cleanName } from './sku.js';
 
 /**
  * @param {object} db the loaded data store
- * @param {object} [opts] { sort: 'orders'|'qty'|'name'|'value', dir: 'asc'|'desc', q: string }
- * @returns {{ groups: Array, totals: object }}
+ * @param {object} [opts] { sort, dir, q, status } where status filters to orders
+ *   in that lifecycle state (e.g. 'shipped', 'cancelled', 'processing').
+ * @returns {{ groups: Array, totals: object, statusCounts: object }}
  */
 export function groupBySku(db, opts = {}) {
-  const { sort = 'orders', dir = 'desc', q = '' } = opts;
+  const { sort = 'orders', dir = 'desc', q = '', status = '' } = opts;
   const skuMeta = db.skuMeta || {};
   const groups = new Map();
+  const statusCounts = {};
 
   for (const order of Object.values(db.orders || {})) {
+    statusCounts[order.status] = (statusCounts[order.status] || 0) + 1;
+    if (status && order.status !== status) continue;
     for (const item of order.items || []) {
       if (!item.sku) continue;
       let g = groups.get(item.sku);
@@ -108,7 +112,7 @@ export function groupBySku(db, opts = {}) {
     value: round2(list.reduce((s, g) => s + g.subtotal, 0)),
   };
 
-  return { groups: list, totals };
+  return { groups: list, totals, statusCounts };
 }
 
 function comparator(sort, dir) {

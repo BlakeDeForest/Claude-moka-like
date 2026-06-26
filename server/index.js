@@ -87,6 +87,7 @@ async function handleApi(req, res, url) {
       sort: url.searchParams.get('sort') || 'orders',
       dir: url.searchParams.get('dir') || 'desc',
       q: url.searchParams.get('q') || '',
+      status: url.searchParams.get('status') || '',
     });
     return sendJson(res, 200, result);
   }

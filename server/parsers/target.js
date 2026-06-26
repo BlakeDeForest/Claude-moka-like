@@ -59,7 +59,8 @@ export function parse(email) {
       releaseDate: null,
     });
   }
-  if (!items.length) return null;
+  // Note: status-only emails (shipped/cancelled) may have no line items; we
+  // still return the order so its status can update an existing record.
 
   const total = parseMoney((text.match(/Order Total\s*\$?\s*([\d.,]+)/i) || [])[1]);
   const shipping = parseMoney((text.match(/Delivery Fee:\s*\$([\d.,]+)/i) || [])[1]);

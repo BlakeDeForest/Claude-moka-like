@@ -2,6 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { parseEmail, parserFor } from '../server/parsers/index.js';
+import { ingestEmails } from '../server/ingest.js';
 
 test('Target: parses item, qty, prices and order number from plaintext', () => {
   const email = {
@@ -109,6 +110,36 @@ test('Shopify: generic store parser handles "Title × qty" rows', () => {
   assert.equal(o.items[0].qty, 2);
   assert.equal(o.items[0].lineTotal, 120);
   assert.equal(o.total, 129.95);
+});
+
+test('Lifecycle: a later shipped email upgrades status and keeps items', () => {
+  const db = { orders: {}, skuMeta: {}, aliases: [] };
+  const confirm = {
+    id: 'k1',
+    sender: 'DonotReply.OnlineShop@orders.kmart.com.au',
+    subject: 'Order 632783560 Confirmed',
+    date: '2026-06-12T00:00:00Z',
+    toRecipients: ['robert.smith_6224@jezdog.com'],
+    htmlBody:
+      '<div>Order number #632783560</div><div>One Piece Booster</div><div>#43792245</div>' +
+      '<div>Quantity : 10</div><div>$72.00</div>' +
+      '<div>Subtotal $72.00</div><div>Order Total (Incl. GST) $72.00</div>',
+  };
+  const shipped = {
+    id: 'k2',
+    sender: 'DonotReply.OnlineShop@orders.kmart.com.au',
+    subject: 'Your order 632783560 is shipped',
+    date: '2026-06-15T00:00:00Z',
+    toRecipients: ['robert.smith_6224@jezdog.com'],
+    htmlBody: '<div>Order number #632783560</div>',
+  };
+  // Ingest out of chronological order on purpose; result must be the same.
+  ingestEmails(db, [shipped, confirm]);
+  const o = db.orders['kmart-632783560'];
+  assert.equal(o.status, 'shipped', 'latest lifecycle status wins');
+  assert.equal(o.items.length, 1, 'items from the confirmation are preserved');
+  assert.equal(o.items[0].qty, 10);
+  assert.equal(o.total, 72);
 });
 
 test('Generic fallback: only fires with order number + priced item', () => {

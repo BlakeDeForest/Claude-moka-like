@@ -22,11 +22,12 @@ export function matches(email) {
   return /ebgames\.com\.au/i.test(email.sender || '');
 }
 
-function statusFromSubject(subject = '', body = '') {
-  const s = (subject + ' ' + body).toLowerCase();
+function statusFromSubject(subject = '') {
+  // Use the subject only — the preorder body boilerplate mentions "shipped".
+  const s = subject.toLowerCase();
   if (s.includes('refund')) return 'refunded';
   if (s.includes('cancel')) return 'cancelled';
-  if (s.includes('shipped') || s.includes('tracking')) return 'shipped';
+  if (s.includes('shipped') || s.includes('on its way') || s.includes('dispatch')) return 'shipped';
   if (s.includes('ready') && s.includes('collect')) return 'ready';
   return 'confirmed';
 }
@@ -105,7 +106,7 @@ export function parse(email) {
       releaseDate,
     });
   }
-  if (!items.length) return null;
+  // Status-only emails may have no line items; still return so status updates.
 
   const total = parseMoney((flat.match(/(?:Order Total|Total)\s*\$([\d.,]+)/i) || [])[1]);
   const subtotal = items.reduce((s, it) => s + (it.lineTotal || 0), 0) || null;
@@ -115,7 +116,7 @@ export function parse(email) {
     orderNumber: String(orderNumber),
     orderDate: parseDate(email.date),
     account: email.toRecipients && email.toRecipients[0] ? email.toRecipients[0] : null,
-    status: statusFromSubject(email.subject || '', flat),
+    status: statusFromSubject(email.subject || ''),
     currency: 'AUD',
     subtotal,
     shipping: null,
